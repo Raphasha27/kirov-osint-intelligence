@@ -1,0 +1,130 @@
+version: "3.9"
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - ./collectors:/app/collectors
+      - ./reports:/app/reports
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  tor:
+    image: dperson/torproxy:latest
+    ports:
+      - "9050:9050"
+      - "9051:9051"
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=kirov
+      - POSTGRES_PASSWORD=kirov
+      - POSTGRES_DB=osint_intel
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kirov"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      - NEO4J_AUTH=neo4j/kirov123
+      - NEO4J_dbms_memory_pagecache_size=512M
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p kirov123 'RETURN 1'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  elasticsearch:
+    image: elasticsearch:8.12.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=kirov
+      - MINIO_ROOT_PASSWORD=kirov12345678
+    volumes:
+      - minio_data:/data
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=kirov
+      - RABBITMQ_DEFAULT_PASS=kirov
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - kirov-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  neo4j_data:
+  redis_data:
+  elasticsearch_data:
+  minio_data:
+  rabbitmq_data:
+
+networks:
+  kirov-network:
+    driver: bridge

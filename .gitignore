@@ -1,0 +1,51 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Collected data
+collectors/**/data/
+collectors/**/cache/
+
+# Reports
+reports/generated/*
+!reports/generated/.gitkeep
+
+# ML models
+analyzer/nlp/models/*.h5
+analyzer/nlp/models/*.pkl
+
+# Docker
+docker-compose.override.yml
+
+# Secrets
+*.pem
+*.key
+*.cert
+collector-keys.json
+dark-web-credentials.json
+
+# Large files
+*.dump
+*.sql
+*.jsonl
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
