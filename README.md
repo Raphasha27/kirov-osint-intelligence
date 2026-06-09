@@ -271,6 +271,14 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 Created and maintained by **Kirov Security Labs** — the research and development division of Kirov, dedicated to advancing AI-driven cybersecurity solutions.
 
+<br/>
+
+---
+
+<p align="center">
+  <sub>🔒 <a href="https://github.com/Raphasha27">Raphasha27</a> Security Ecosystem — <a href="https://github.com/Raphasha27/Raphasha27">Back to Profile</a></sub>
+</p>
+
 <p align="center">
   <sub>See the unseen. Know the unknown. Stay ahead of the threat.</sub>
 </p>
